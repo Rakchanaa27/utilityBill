@@ -1,0 +1,98 @@
+openapi: 3.0.1
+ 
+info:
+  title: Real Estate Property Matching & Scoring
+  description: API for Real-Estate Property and generating management summaries.
+  version: v1
+ 
+servers:
+  - url: http://localhost:8290/Property
+ 
+paths:
+ 
+ /platformreceives:
+    post:
+      summary: Real-Estate Property
+      description: Real-Estate will collects the buyer request and find the according property to the buyer.
+      operationId: processRealEstate
+ 
+      requestBody:
+        required: true
+        content:
+          application/json:
+            example:
+              requestId: "REQ9001"
+              buyer:
+                - name: "Karthik"
+                  budget: 9000000
+                  minBedrooms: 2
+                  preferredLocation: "OMR"
+                  maxDistanceKm: 8
+                  minAreaSqft: 1200
+                  propertyType: "APARTMENT"
+                  parkingRequired: true
+                  furnishedRequired: true
+                  requiredAmenities:  
+                    - GYM
+                    - SWIMMING_POOL
+                    
+              properties:
+                - propertyId: "P101"
+                  location: "OMR"
+                  price: 8500000
+                  bedrooms: 3
+                  areaSqft: 1450
+                  distanceKm: 5
+                  type: "APARTMENT"
+                  parking: true
+                  furnished: true
+                  amenities:  
+                    - GYM
+                    - SWIMMING_POOL
+                    - SECURITY
+                - propertyId: "P101"
+                  location: "OMR"
+                  price: 8500000
+                  bedrooms: 3
+                  areaSqft: 1450
+                  distanceKm: 5
+                  type: "APARTMENT"
+                  parking: true
+                  furnished: true
+                  amenities:  
+                    - GYM
+                    - SWIMMING_POOL
+ 
+      responses:
+        '200':
+          description: Real Estate  processed successfully
+          content:
+            application/json:
+              example:
+               requestId: "REQ9001"
+               status: "MATCHES_FOUND"
+               totalPropertiesEvaluated: 3
+               qualifyingMatches: 2
+               matches:
+               - propertyId: "P101"
+                 matchScore: 100
+                 matchLevel: "EXCELLENT"
+                 reasons:
+                  - "Within buget"
+                  - "Preferred location Matched"
+                  - "Required bedrooms satisfied"
+                  -  "Required area satisfied"
+                  -  "Within maximum distance"
+                  -  "Required parking available"
+                  -  "furnished requirement satisfied"
+                  -  "Required property type satisfied"
+                  -  "GYMavailable, SWIMMING_POOLavailable, SECURITYavailable"
+                 
+                
+        '400':
+          description: Invalid buyer or property request
+          content:
+            application/json:
+              example:
+                error: "INVALID_REQUESTID"
+                errorMessage: "requestId is invalid or empty."

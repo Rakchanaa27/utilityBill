@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="tel-Utility-Bill-v1-foreachthirdbilling-sequence" trace="disable" xmlns="http://ws.apache.org/ns/synapse">
+ <script language="js"><![CDATA[ 
+    var data = mc.getPayloadJSON();
+     var customers = data.customers;
+      var totalConsumptions = 0;
+          var totalEnergyCharges = 0;
+            var totalpreviousBalances = 0;
+          var totalpayables = 0;
+          var lowRiskCustomers = 0;
+          var mediumRiskCustomers = 0;
+          var highRiskCustomers = 0;
+
+          for (var i = 0; i < customers.length; i++)
+          {
+           totalConsumptions += Number(customers[i].totalConsumption);
+           totalEnergyCharges += Number(customers[i].totalEnergyCharge);
+            totalpreviousBalances += Number(customers[i].previousBalance);
+             totalpayables += Number(customers[i].totalpayable);
+             {
+               if(customers[i].risklevel == "LOW_RISK"){
+          lowRiskCustomers++;
+           }
+           else if(customers[i].risklevel == "MEDIUM_RISK"){
+          mediumRiskCustomers++;
+           }
+           else if(customers[i].risklevel == "HIGH_RISK"){
+          highRiskCustomers++;
+           }
+           }
+           }
+
+           mc.setProperty("totalConsumptions",totalConsumptions);
+             mc.setProperty("totalEnergyCharges",totalEnergyCharges);
+               mc.setProperty("totalpreviousBalances",totalpreviousBalances);
+                 mc.setProperty("totalpayables",totalpayables);
+                   mc.setProperty("lowRiskCustomers",lowRiskCustomers);
+                     mc.setProperty("mediumRiskCustomers",mediumRiskCustomers);
+                        mc.setProperty("highRiskCustomers",highRiskCustomers);
+                           ]]></script>
+    <property name="totalConsumptions" expression="$ctx:totalConsumptions"/>
+    <property name="totalEnergyCharges" expression="$ctx:totalEnergyCharges"/>
+    <property name="totalpreviousBalances" expression="$ctx:totalpreviousBalances"/>
+    <property name="totalpayables" expression="$ctx:totalpayables"/>
+    <property name="lowRiskCustomers" expression="$ctx:lowRiskCustomers"/>
+    <property name="mediumRiskCustomers" expression="$ctx:mediumRiskCustomers"/>
+    <property name="highRiskCustomers" expression="$ctx:highRiskCustomers"/>
+    <log>
+        <property name="totalConsumptions" expression="$ctx:totalConsumptions"/>
+        <property name="totalEnergyCharges" expression="$ctx:totalEnergyCharges"/>
+        <property name="totalpreviousBalances" expression="$ctx:totalpreviousBalances"/>
+        <property name="totalpayables" expression="$ctx:totalpayables"/>
+        <property name="lowRiskCustomers" expression="$ctx:lowRiskCustomers"/>
+        <property name="mediumRiskCustomers" expression="$ctx:mediumRiskCustomers"/>
+        <property name="highRiskCustomers" expression="$ctx:highRiskCustomers"/>
+    </log>
+    <filter xpath="number(get-property('highRiskCustomers')) &lt;=2">
+        <then>
+            <property name="batchStatus" value="PROCESSED" scope="default"/>
+        </then>
+        <else>
+             <property name="batchStatus" value="REJECTED" scope="default"/>
+        </else>
+    </filter>
+</sequence>

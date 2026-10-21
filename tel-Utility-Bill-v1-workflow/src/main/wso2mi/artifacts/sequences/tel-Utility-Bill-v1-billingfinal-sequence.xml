@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="tel-Utility-Bill-v1-billingfinal-sequence" trace="disable" xmlns="http://ws.apache.org/ns/synapse">
+ <payloadFactory media-type="json">
+        <format>
+            {
+            "batchId":"$1",
+            "billingMonth":"$2",
+            "totalCustomers":"$3",
+            "customers":$4,
+            "totalConsumption":"$5",
+            "totalEnergyCharge":"$6",
+            "totalPreviousBalance":"$7",
+            "totalPayable":"$8",
+            "lowRiskCustomers":"$9",
+            "mediumRiskCustomers":"$10",
+            "highRiskCustomers":"$11",
+            "batchStatus":"$12"
+            }
+        </format>
+        <args>
+            <arg expression="$ctx:batchId"/>
+            <arg expression="$ctx:billingMonth"/>
+            <arg expression="$ctx:totalCustomers"/>
+            <arg expression="$ctx:customers"/>
+            <arg expression="$ctx:totalConsumptions"/>
+            <arg expression="$ctx:totalEnergyCharges"/>
+            <arg expression="$ctx:totalpreviousBalances"/>
+            <arg expression="$ctx:totalpayables"/>
+            <arg expression="$ctx:lowRiskCustomers"/>
+            <arg expression="$ctx:mediumRiskCustomers"/>
+            <arg expression="$ctx:highRiskCustomers"/>
+            <arg expression="$ctx:batchStatus"/>
+        </args>
+    </payloadFactory>
+</sequence>

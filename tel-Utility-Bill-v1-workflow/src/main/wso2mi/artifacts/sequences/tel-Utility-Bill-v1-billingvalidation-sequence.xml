@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="tel-Utility-Bill-v1-billingvalidation-sequence" trace="disable" xmlns="http://ws.apache.org/ns/synapse">
+    <filter xpath="string-length(normalize-space($ctx:batchId)) = 0">
+        <then>
+            <property name="HTTP_SC" value="400" scope="axis2" type="STRING"/>
+            <payloadFactory media-type="json">
+                <format>
+                    {
+                    "error":"INVALID_BATCHID",
+                    "errorMessage":"batchId is invalid or empty."
+                    }
+                </format>
+            </payloadFactory>
+            <respond/>
+        </then>
+    </filter>
+    <filter xpath="string-length(normalize-space($ctx:billingMonth)) = 0">
+        <then>
+            <property name="HTTP_SC" value="400" scope="axis2" type="STRING"/>
+            <payloadFactory media-type="json">
+                <format>
+                    {
+                    "error":"INVALID_BILLINGMONTH",
+                    "errorMessage":"billingMonth is invalid or empty."
+                    }
+                </format>
+            </payloadFactory>
+            <respond/>
+        </then>
+    </filter>
+     <filter xpath="string-length(normalize-space($ctx:tariffType)) = 0">
+        <then>
+            <property name="HTTP_SC" value="400" scope="axis2" type="STRING"/>
+            <payloadFactory media-type="json">
+                <format>
+                    {
+                    "error":"INVALID_TARIFFTYPE",
+                    "errorMessage":"tariffType is invalid or empty."
+                    }
+                </format>
+            </payloadFactory>
+            <respond/>
+        </then>
+    </filter>
+</sequence>

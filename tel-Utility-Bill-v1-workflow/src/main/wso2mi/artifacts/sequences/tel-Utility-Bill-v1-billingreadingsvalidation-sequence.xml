@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="tel-Utility-Bill-v1-billingreadingsvalidation-sequence" trace="disable" xmlns="http://ws.apache.org/ns/synapse">
+ <filter xpath="string-length(normalize-space($ctx:month)) = 0">
+        <then>
+            <property name="HTTP_SC" value="400" scope="axis2" type="STRING"/>
+            <payloadFactory media-type="json">
+                <format>
+                    {
+                    "error":"INVALID_MONTH",
+                    "errorMessage":"month is invalid or empty."
+                    }
+                </format>
+            </payloadFactory>
+            <respond/>
+        </then>
+    </filter>
+    <filter xpath="string-length(normalize-space($ctx:previousReading)) = 0">
+        <then>
+            <property name="HTTP_SC" value="400" scope="axis2" type="STRING"/>
+            <payloadFactory media-type="json">
+                <format>
+                    {
+                    "error":"INVALID_PREVOIUSREADING",
+                    "errorMessage":"previousReading is invalid or empty."
+                    }
+                </format>
+            </payloadFactory>
+            <respond/>
+        </then>
+    </filter>
+    <filter xpath="string-length(normalize-space($ctx:currentReading)) = 0">
+        <then>
+            <property name="HTTP_SC" value="400" scope="axis2" type="STRING"/>
+            <payloadFactory media-type="json">
+                <format>
+                    {
+                    "error":"INVALID_CURRENTREADING",
+                    "errorMessage":"currentReading is invalid or empty."
+                    }
+                </format>
+            </payloadFactory>
+            <respond/>
+        </then>
+    </filter>
+    <filter xpath="number(get-property('currentReading')) &lt; number(get-property('previousReading'))">
+         <then>
+            <property name="HTTP_SC" value="400" scope="axis2" type="STRING"/>
+            <payloadFactory media-type="json">
+                <format>
+                    {
+                    "error":"INVALID_READING",
+                    "errorMessage":"Reading is invalid."
+                    }
+                </format>
+            </payloadFactory>
+            <respond/>
+        </then>
+    </filter>
+</sequence>

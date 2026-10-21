@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/utility" name="tel-Utility-Bill-v1-main-api" version="1.0.0" version-type="url" xmlns="http://ws.apache.org/ns/synapse">
+    <resource methods="POST" uri-template="/billing/process" inSequence="tel-Utility-Bill-v1-billing-in-sequence" faultSequence="tel-Utility-Bill-v1-fault-in-sequence"/>
+</api>

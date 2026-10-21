@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="tel-Utility-Bill-v1-billingcustomervalidation-sequence" trace="disable" xmlns="http://ws.apache.org/ns/synapse">
+<filter xpath="string-length(normalize-space($ctx:customerId)) = 0">
+        <then>
+            <property name="HTTP_SC" value="400" scope="axis2" type="STRING"/>
+            <payloadFactory media-type="json">
+                <format>
+                    {
+                    "error":"INVALID_CUSTOMERID",
+                    "errorMessage":"customerId is invalid or empty."
+                    }
+                </format>
+            </payloadFactory>
+            <respond/>
+        </then>
+    </filter>
+    <filter xpath="string-length(normalize-space($ctx:customerName)) = 0">
+        <then>
+            <property name="HTTP_SC" value="400" scope="axis2" type="STRING"/>
+            <payloadFactory media-type="json">
+                <format>
+                    {
+                    "error":"INVALID_CUSTOMERNAME",
+                    "errorMessage":"customerName is invalid or empty."
+                    }
+                </format>
+            </payloadFactory>
+            <respond/>
+        </then>
+    </filter>
+     <filter xpath="string-length(normalize-space($ctx:previousBalance)) = 0">
+        <then>
+            <property name="HTTP_SC" value="400" scope="axis2" type="STRING"/>
+            <payloadFactory media-type="json">
+                <format>
+                    {
+                    "error":"INVALID_PREVIOUSBALANCE",
+                    "errorMessage":"previousBalance is invalid or empty."
+                    }
+                </format>
+            </payloadFactory>
+            <respond/>
+        </then>
+    </filter>
+</sequence>

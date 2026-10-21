@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="tel-Utility-Bill-v1-foreachfirstbilling-sequence" trace="disable" xmlns="http://ws.apache.org/ns/synapse">
+ <script language="js"><![CDATA[ 
+    var previousReading = Number(mc.getProperty("previousReading"));
+    var currentReading = Number(mc.getProperty("currentReading"));
+    var consumption = currentReading - previousReading;
+    mc.setProperty("consumption",consumption);
+    ]]></script>
+    <property name="consumption" expression="$ctx:consumption"/>
+    <log>
+        <property name="consumption" expression="$ctx:consumption"/>
+    </log>
+    <filter xpath="number(get-property('consumption')) &lt;= '100'">
+        <then>
+            <property name="usageStatus" value="LOW"/>
+        </then>
+        <else>
+            <filter xpath="number(get-property('consumption')) &lt;= '300'">
+                <then>
+                    <property name="usageStatus" value="NORMAL"/>
+                </then>
+                <else>
+                    <filter xpath="number(get-property('consumption')) &lt;= '500'">
+                        <then>
+                            <property name="usageStatus" value="HIGH"/>
+                        </then>
+                        <else>
+                            <property name="usageStatus" value="CRITICAL"/>
+                        </else>
+                    </filter>
+                </else>
+            </filter>
+        </else>
+    </filter>
+    <property name="connectionType" expression="$ctx:connectionType"/>
+    <log>
+        <property name="connectionType" expression="$ctx:connectionType"/>
+    </log>
+    <filter xpath="string(get-property('connectionType')) = 'RESIDENTIAL'">
+        <then>
+            <filter xpath="number(get-property('consumption')) &lt;= '100'">
+                <then>
+                    <property name="rate" value="2"/>
+                </then>
+                <else>
+                    <filter xpath="number(get-property('consumption')) &lt;= '200'">
+                        <then>
+                            <property name="rate" value="3"/>
+                        </then>
+                        <else>
+                            <filter xpath="number(get-property('consumption')) &lt;= '500'">
+                                <then>
+                                    <property name="rate" value="5"/>
+                                </then>
+                                <else>
+                                    <property name="rate" value="8"/>
+                                </else>
+                            </filter>
+                        </else>
+                    </filter>
+                </else>
+            </filter>
+        </then>
+        <else>
+            <filter xpath="string(get-property('connectionType')) = 'COMMERCIAL'">
+                <then>
+                    <filter xpath="number(get-property('consumption')) &lt;= '100'">
+                        <then>
+                            <property name="rate" value="2"/>
+                        </then>
+                        <else>
+                            <filter xpath="number(get-property('consumption')) &lt;= '200'">
+                                <then>
+                                    <property name="rate" value="3"/>
+                                </then>
+                                <else>
+                                    <filter xpath="number(get-property('consumption')) &lt;= '500'">
+                                        <then>
+                                            <property name="rate" value="5"/>
+                                        </then>
+                                        <else>
+                                            <property name="rate" value="8"/>
+                                        </else>
+                                    </filter>
+                                </else>
+                            </filter>
+                        </else>
+                    </filter>
+                </then>
+            </filter>
+        </else>
+    </filter>
+    <property name="rate" expression="$ctx:rate"/>
+    <log>
+        <property name="rate" expression="$ctx:rate"/>
+    </log>
+    <property name="energyCharge" expression="$ctx:consumption * $ctx:rate" scope="default" type="INTEGER"/>
+    <log>
+        <property name="energyCharge" expression="$ctx:energyCharge"/>
+    </log>
+    <payloadFactory media-type="json">
+        <format>
+            {
+            "month":"$1",
+            "consumption":"$2",
+            "usageStatus":"$3",
+            "energyCharge":"$4"
+            }
+        </format>
+        <args>
+            <arg expression="$ctx:month"/>
+            <arg expression="$ctx:consumption"/>
+            <arg expression="$ctx:usageStatus"/>
+            <arg expression="$ctx:energyCharge"/>
+        </args>
+    </payloadFactory>
+</sequence>

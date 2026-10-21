@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="tel-Utility-Bill-v1-billing-in-sequence" trace="disable" xmlns="http://ws.apache.org/ns/synapse">
+    <log>
+        <property name="Status" value="Starts The Process"/>
+    </log>
+    <property name="batchId" expression="//*[local-name()='batchId']/text()" scope="default" type="STRING"/>
+    <property name="billingMonth" expression="//*[local-name()='billingMonth']/text()" scope="default" type="STRING"/>
+    <property name="tariffType" expression="//*[local-name()='tariffType']/text()" scope="default" type="STRING"/>
+    <property name="totalCustomers" expression="json-eval($.customers.length())" scope="default" type="INTEGER"/>
+    <log>
+        <property name="batchId" expression="$ctx:batchId"/>
+        <property name="billingMonth" expression="$ctx:billingMonth"/>
+        <property name="tariffType" expression="$ctx:tariffType"/>
+        <property name="totalCustomers" expression="$ctx:totalCustomers"/>
+    </log>
+    <sequence key="tel-Utility-Bill-v1-billingvalidation-sequence"/>
+    <foreach collection="${payload.customers}" parallel-execution="false">
+        <sequence>
+            <property name="customerId" expression="//*[local-name()='customerId']/text()" scope="default" type="STRING"/>
+            <property name="customerName" expression="//*[local-name()='customerName']/text()" scope="default" type="STRING"/>
+            <property name="connectionType" expression="//*[local-name()='connectionType']/text()" scope="default" type="STRING"/>
+            <property name="previousBalance" expression="//*[local-name()='previousBalance']/text()" scope="default" type="STRING"/>
+            <log>
+                <property name="customerId" expression="$ctx:customerId"/>
+                <property name="customerName" expression="$ctx:customerName"/>
+                <property name="connectionType" expression="$ctx:connectionType"/>
+                <property name="previousBalance" expression="$ctx:previousBalance"/>
+            </log>
+             <sequence key="tel-Utility-Bill-v1-billingcustomervalidation-sequence"/>
+            <foreach collection="${payload.readings}" parallel-execution="false">
+                <sequence>
+                    <property name="month" expression="//*[local-name()='month']/text()" scope="default" type="STRING"/>
+                    <property name="previousReading" expression="//*[local-name()='previousReading']/text()" scope="default" type="STRING"/>
+                    <property name="currentReading" expression="//*[local-name()='currentReading']/text()" scope="default" type="STRING"/>
+                    <log>
+                        <property name="month" expression="$ctx:month"/>
+                        <property name="previousReading" expression="$ctx:previousReading"/>
+                        <property name="currentReading" expression="$ctx:currentReading"/>
+                    </log>
+                    <sequence key="tel-Utility-Bill-v1-billingreadingsvalidation-sequence"/>
+                    <sequence key="tel-Utility-Bill-v1-foreachfirstbilling-sequence"/>
+                </sequence>
+            </foreach>
+            <sequence key="tel-Utility-Bill-v1-foreachsecondbilling-sequence"/>
+        </sequence>
+    </foreach>
+    <property name="customers" expression="json-eval($.customers)" scope="default"/>
+    <log>
+        <property name="customers" expression="$ctx:customers"/>
+    </log>
+    <sequence key="tel-Utility-Bill-v1-foreachthirdbilling-sequence"/>
+     <sequence key="tel-Utility-Bill-v1-billingfinal-sequence"/>
+    <respond/>
+</sequence>

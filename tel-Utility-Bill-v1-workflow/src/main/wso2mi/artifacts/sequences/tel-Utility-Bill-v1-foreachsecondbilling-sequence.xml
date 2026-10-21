@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="tel-Utility-Bill-v1-foreachsecondbilling-sequence" trace="disable" xmlns="http://ws.apache.org/ns/synapse">
+<script language="js"><![CDATA[ 
+    var customer = mc.getPayloadJSON();
+    var customerId = customer.customerId;
+      var customerName = customer.customerName;
+        var connectionType = customer.connectionType;
+          var previousBalance = Number(customer.previousBalance);
+          var readings = customer.readings;
+          var totalConsumption = 0;
+          var totalEnergyCharge = 0;
+          var  lowMonths = 0;
+          var normalMonths = 0;
+          var highMonths = 0;
+          var criticalMonths = 0;
+           for (var i = 0; i < readings.length; i++){
+           totalConsumption += Number(readings[i].consumption);
+           totalEnergyCharge += Number(readings[i].energyCharge);
+           if(readings[i].usageStatus == "LOW"){
+          lowMonths++;
+           }
+           else if (readings[i].usageStatus == "NORMAL"){
+           normalMonths++;
+           }
+           else if (readings[i].usageStatus == "HIGH"){
+           highMonths++;
+           }
+           else if (readings[i].usageStatus == "CRITICAL"){
+           criticalMonths++;
+           }
+           }
+           var risklevel;
+           if(criticalMonths > 0 || highMonths >= 2 || previousBalance > 5000)
+           {
+           risklevel = "HIGH_RISK";
+           }
+           else if(highMonths == 1){
+            risklevel = "MEDIUM_RISK";
+           }
+           else
+           {
+            risklevel = "LOW_RISK";
+           }
+           mc.setProperty("totalConsumption",totalConsumption);
+           mc.setProperty("totalEnergyCharge",totalEnergyCharge);
+         mc.setProperty("risklevel",risklevel);
+    ]]></script>
+    <property name="totalConsumption" expression="$ctx:totalConsumption"/>
+    <property name="totalEnergyCharge" expression="$ctx:totalEnergyCharge"/>
+    <property name="risklevel" expression="$ctx:risklevel"/>
+    <log>
+        <property name="totalConsumption" expression="$ctx:totalConsumption"/>
+        <property name="totalEnergyCharge" expression="$ctx:totalEnergyCharge"/>
+        <property name="risklevel" expression="$ctx:risklevel"/>
+    </log>
+    <filter xpath="number(get-property('totalConsumption')) &lt;= '100'">
+        <then>
+            <property name="usageStatus" value="LOW"/>
+        </then>
+        <else>
+            <filter xpath="number(get-property('totalConsumption')) &lt;= '300'">
+                <then>
+                    <property name="usageStatus" value="NORMAL"/>
+                </then>
+                <else>
+                    <filter xpath="number(get-property('totalConsumption')) &lt;= '500'">
+                        <then>
+                            <property name="usageStatus" value="HIGH"/>
+                        </then>
+                        <else>
+                            <property name="usageStatus" value="CRITICAL"/>
+                        </else>
+                    </filter>
+                </else>
+            </filter>
+        </else>
+    </filter>
+    <property name="totalpayable" expression="$ctx:totalEnergyCharge + $ctx:previousBalance" scope="default" type="INTEGER"/>
+    <log>
+        <property name="totalpayable" expression="$ctx:totalpayable"/>
+    </log>
+    <payloadFactory media-type="json">
+        <format>
+            {
+            "customerId":"$1",
+            "connectionType":"$2",
+            "totalConsumption":"$3",
+            "totalEnergyCharge":"$4",
+            "previousBalance":"$5",
+            "totalpayable":"$6",
+            "usageStatus":"$7",
+            "risklevel":"$8"
+            }
+        </format>
+        <args>
+            <arg expression="$ctx:customerId"/>
+            <arg expression="$ctx:connectionType"/>
+            <arg expression="$ctx:totalConsumption"/>
+            <arg expression="$ctx:totalEnergyCharge"/>
+            <arg expression="$ctx:previousBalance"/>
+            <arg expression="$ctx:totalpayable"/>
+            <arg expression="$ctx:usageStatus"/>
+            <arg expression="$ctx:risklevel"/>
+        </args>
+    </payloadFactory>
+</sequence>
